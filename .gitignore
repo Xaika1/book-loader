@@ -1,5 +1,6 @@
 library/
-config.json
-config.tmp
+devices.json
+devices.tmp
 journal.log
 __pycache__/
+android/build/

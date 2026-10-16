@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Книги на планшеты</title>
+<title>Учебники по Wi-Fi</title>
 <style>
 :root {
   --bg: #f6f5f2; --fg: #1d1d1b; --muted: #6b6a65; --card: #ffffff; --line: #e3e1db;
@@ -20,16 +20,23 @@
   }
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; padding-bottom: 110px; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
 button, input { font: inherit; color: inherit; }
 header { display: flex; align-items: center; gap: 16px; padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--card); flex-wrap: wrap; }
 header h1 { font-size: 19px; margin: 0; }
 header .sp { flex: 1; }
-header a { color: var(--accent); text-decoration: none; font-weight: 600; }
-.pill { font-size: 13px; padding: 3px 10px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); }
-.pill.bad { background: var(--err-soft); color: var(--err); }
-main { display: grid; grid-template-columns: minmax(320px, 420px) 1fr; gap: 20px; padding: 20px; max-width: 1600px; margin: 0 auto; }
-@media (max-width: 900px) { main { grid-template-columns: 1fr; padding: 16px; } }
+header a, .hlink { color: var(--accent); text-decoration: none; font-weight: 600; background: none; border: none; cursor: pointer; padding: 0; font-size: 15px; }
+.wrap { max-width: 1600px; margin: 0 auto; padding: 20px; }
+@media (max-width: 900px) { .wrap { padding: 16px; } }
+.summary { display: grid; grid-template-columns: 2fr repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+@media (max-width: 900px) { .summary { grid-template-columns: 1fr 1fr; } .summary .addr { grid-column: 1 / -1; } }
+.tile { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; box-shadow: var(--shadow); min-width: 0; }
+.tile .k { font-size: 13px; color: var(--muted); }
+.tile .v { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.tile.addr .v { font-size: 20px; word-break: break-all; color: var(--accent); }
+.tile.addr .k2 { font-size: 13px; color: var(--muted); margin-top: 2px; }
+main { display: grid; grid-template-columns: minmax(320px, 440px) 1fr; gap: 20px; }
+@media (max-width: 900px) { main { grid-template-columns: 1fr; } }
 .panel { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; box-shadow: var(--shadow); min-width: 0; }
 .panel h2 { font-size: 17px; margin: 0 0 12px; display: flex; align-items: baseline; gap: 10px; }
 .panel h2 small { font-weight: 400; color: var(--muted); font-size: 13px; }
@@ -38,22 +45,14 @@ main { display: grid; grid-template-columns: minmax(320px, 420px) 1fr; gap: 20px
 .drop b { color: var(--fg); display: block; font-size: 16px; margin-bottom: 4px; }
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
 .row label { color: var(--muted); font-size: 13px; }
-input[type=text], input[type=number] { border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 7px 10px; min-width: 0; }
-input[type=text] { flex: 1; }
+input[type=text] { border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 7px 10px; min-width: 0; flex: 1; }
 input[type=checkbox] { width: 17px; height: 17px; accent-color: var(--accent); margin: 0; flex: none; }
-.btn { border: 1px solid var(--line); background: var(--card); border-radius: 8px; padding: 7px 12px; cursor: pointer; white-space: nowrap; }
-.btn:hover:not(:disabled) { border-color: var(--accent); }
-.btn:disabled { opacity: .45; cursor: default; }
-.btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 600; }
-.btn.danger { color: var(--err); }
-.btn.small { padding: 3px 8px; font-size: 13px; }
 .link { background: none; border: none; color: var(--accent); cursor: pointer; padding: 0; font-size: 13px; }
 .link.danger { color: var(--err); }
 .progress { height: 6px; background: var(--bar); border-radius: 3px; overflow: hidden; }
 .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .3s; }
-.progress.err > div { background: var(--err); }
 #uploadBox { margin: 10px 0; font-size: 13px; color: var(--muted); }
-.books { max-height: calc(100vh - 380px); min-height: 120px; overflow-y: auto; margin-top: 6px; border-top: 1px solid var(--line); }
+.books { max-height: calc(100vh - 430px); min-height: 120px; overflow-y: auto; margin-top: 6px; border-top: 1px solid var(--line); }
 .folder { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); padding: 10px 2px 4px; display: flex; gap: 8px; align-items: center; }
 .book { display: flex; gap: 9px; align-items: center; padding: 6px 2px; border-bottom: 1px solid var(--line); cursor: pointer; }
 .book:hover { background: var(--bg); }
@@ -64,141 +63,120 @@ input[type=checkbox] { width: 17px; height: 17px; accent-color: var(--accent); m
 .alert { padding: 10px 12px; border-radius: 8px; margin: 0 0 10px; font-size: 14px; background: var(--warn-soft); color: var(--warn); }
 .alert.err { background: var(--err-soft); color: var(--err); }
 .alert a { color: inherit; font-weight: 600; }
+.filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.chip { border: 1px solid var(--line); background: var(--card); border-radius: 99px; padding: 4px 12px; font-size: 13px; cursor: pointer; }
+.chip.on { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
-.card { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; background: var(--card); }
-.card.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.card.off { opacity: .55; }
-.card .top { display: flex; gap: 8px; align-items: center; cursor: pointer; }
+.card { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 5px; background: var(--card); }
+.card.off { opacity: .6; }
+.card .top { display: flex; gap: 8px; align-items: center; }
 .card .top b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .card .meta { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; background: var(--off); }
 .dot.ok { background: var(--accent); } .dot.warn { background: var(--warn); } .dot.err { background: var(--err); }
 .status { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .status.err { color: var(--err); white-space: normal; } .status.warn { color: var(--warn); white-space: normal; } .status.ok { color: var(--accent); }
-.stats { display: flex; gap: 12px; font-size: 12px; color: var(--muted); }
+.stats { display: flex; gap: 12px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
 .stats .low { color: var(--err); font-weight: 600; }
-.actions { display: flex; gap: 10px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 6px; margin-top: 2px; }
-.bar { position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line); padding: 12px 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; z-index: 5; }
-.bar .info { flex: 1; min-width: 220px; }
-.bar .info .sub { font-size: 13px; color: var(--muted); }
-details.settings { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 10px; }
-details.settings summary { cursor: pointer; color: var(--muted); font-size: 14px; }
+.actions { display: flex; gap: 12px; border-top: 1px solid var(--line); padding-top: 6px; margin-top: 2px; }
 dialog { border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--fg); width: min(720px, calc(100vw - 32px)); max-height: 80vh; padding: 0; }
 dialog::backdrop { background: rgba(0,0,0,.4); }
 dialog .head { display: flex; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--line); gap: 10px; }
 dialog .head h3 { margin: 0; flex: 1; font-size: 17px; }
 dialog .body { padding: 12px 16px; overflow-y: auto; max-height: calc(80vh - 60px); }
 dialog pre { white-space: pre-wrap; font-size: 13px; margin: 0; }
-.ok-text { color: var(--accent); } .muted { color: var(--muted); }
+.btn { border: 1px solid var(--line); background: var(--card); border-radius: 8px; padding: 5px 12px; cursor: pointer; }
 #toast { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 8px; z-index: 20; display: none; max-width: calc(100vw - 32px); }
 #toast.err { background: var(--err); color: #fff; }
 </style>
 </head>
 <body>
 <header>
-  <h1>Книги на планшеты</h1>
-  <span id="adbPill" class="pill">ADB…</span>
+  <h1>Учебники по Wi-Fi</h1>
   <span class="sp"></span>
-  <button class="link" id="journalBtn" style="font-size:15px;font-weight:600">Журнал</button>
+  <button class="hlink" id="journalBtn">Журнал</button>
   <a href="/help" target="_blank">Инструкция</a>
 </header>
 
-<main>
-  <section class="panel">
-    <h2>1. Книги <small id="libCount"></small></h2>
-    <div class="drop" id="drop">
-      <b>Перетащите книги или папки сюда</b>
-      или нажмите, чтобы выбрать файлы<br>
-      <span style="font-size:12px">PDF, EPUB, FB2, DJVU, MOBI, AZW3, TXT, RTF, DOC(X), CHM, CBZ…</span>
-    </div>
-    <input type="file" id="fileInput" multiple hidden>
-    <div class="row">
-      <label for="folder">В папку:</label>
-      <input type="text" id="folder" list="folders" placeholder="необязательно, например: 5 класс/Математика">
-      <datalist id="folders"></datalist>
-    </div>
-    <div id="uploadBox" hidden><div id="uploadText"></div><div class="progress"><div id="uploadBar"></div></div></div>
-    <div class="row" style="margin-bottom:0">
-      <label style="display:flex;gap:6px;align-items:center;color:var(--fg);font-size:14px"><input type="checkbox" id="allBooks"> Выбрать все</label>
-      <span class="sp" style="flex:1"></span>
-      <button class="link danger" id="delBooks">Удалить выбранные из списка</button>
-    </div>
-    <div class="books" id="books"></div>
-  </section>
+<div class="wrap">
+  <div class="summary">
+    <div class="tile addr"><div class="k">Адрес для планшетов (открыть в браузере на планшете, чтобы установить приложение)</div><div class="v" id="addr">…</div><div class="k2" id="addr2"></div></div>
+    <div class="tile"><div class="k">Учебников</div><div class="v" id="tBooks">–</div></div>
+    <div class="tile"><div class="k">Планшетов на связи</div><div class="v" id="tOnline">–</div></div>
+    <div class="tile"><div class="k">Всё скачано</div><div class="v" id="tSynced">–</div></div>
+  </div>
 
-  <section class="panel">
-    <h2>2. Планшеты <small id="devCount"></small></h2>
-    <div id="alerts"></div>
-    <div class="row">
-      <button class="btn" id="selReady">Выбрать все готовые</button>
-      <button class="btn" id="selNone">Снять выбор</button>
-      <span style="flex:1"></span>
-      <input type="text" id="wifiAddr" placeholder="IP по Wi-Fi, напр. 192.168.1.25" style="flex:0 1 230px">
-      <button class="btn" id="wifiBtn">Подключить</button>
-    </div>
-    <div class="grid" id="devices"></div>
-    <details class="settings">
-      <summary>Настройки</summary>
-      <div class="row">
-        <label for="targetDir">Папка для книг на планшете:</label>
-        <input type="text" id="targetDir" style="flex:0 1 260px">
+  <main>
+    <section class="panel">
+      <h2>Учебники <small id="libCount"></small></h2>
+      <div class="drop" id="drop">
+        <b>Перетащите учебники или папки сюда</b>
+        или нажмите, чтобы выбрать файлы<br>
+        <span style="font-size:12px">Они автоматически скачаются на все планшеты</span>
       </div>
+      <input type="file" id="fileInput" multiple hidden>
       <div class="row">
-        <label for="parallel">Сколько планшетов загружать одновременно:</label>
-        <input type="number" id="parallel" min="1" max="64" style="width:80px">
-        <button class="btn" id="saveSettings">Сохранить</button>
+        <label for="folder">В папку:</label>
+        <input type="text" id="folder" list="folders" placeholder="необязательно, например: 5 класс/Математика">
+        <datalist id="folders"></datalist>
       </div>
-      <div class="row">
-        <button class="btn" id="showOff">Показать/скрыть отключённые</button>
-        <button class="btn" id="adbRestart">Перезапустить ADB</button>
+      <div id="uploadBox" hidden><div id="uploadText"></div><div class="progress"><div id="uploadBar"></div></div></div>
+      <div class="row" style="margin-bottom:0">
+        <label style="display:flex;gap:6px;align-items:center;color:var(--fg);font-size:14px"><input type="checkbox" id="allBooks"> Выбрать все</label>
+        <span style="flex:1"></span>
+        <button class="link danger" id="delBooks">Удалить выбранные</button>
       </div>
-    </details>
-  </section>
-</main>
+      <div class="books" id="books"></div>
+    </section>
 
-<div class="bar">
-  <div class="info"><div id="sumMain">Выберите книги и планшеты</div><div class="sub" id="sumSub"></div></div>
-  <button class="btn danger" id="deleteBtn">Удалить с планшетов</button>
-  <button class="btn" id="retryBtn" hidden>Повторить для ошибок</button>
-  <button class="btn" id="cancelBtn" hidden>Остановить</button>
-  <button class="btn primary" id="pushBtn">Загрузить на планшеты</button>
+    <section class="panel">
+      <h2>Планшеты <small id="devCount"></small></h2>
+      <div id="alerts"></div>
+      <div class="filters" id="filters"></div>
+      <div class="grid" id="devices"></div>
+    </section>
+  </main>
 </div>
 
-<dialog id="dlg"><div class="head"><h3 id="dlgTitle"></h3><button class="btn small" onclick="dlg.close()">Закрыть</button></div><div class="body" id="dlgBody"></div></dialog>
+<dialog id="dlg"><div class="head"><h3 id="dlgTitle"></h3><button class="btn" onclick="dlg.close()">Закрыть</button></div><div class="body" id="dlgBody"></div></dialog>
 <div id="toast"></div>
 
 <script>
 const $ = id => document.getElementById(id);
-const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmtSize = n => n == null ? '—' : n < 1024**2 ? Math.max(1, Math.round(n/1024)) + ' КБ'
   : n < 1024**3 ? (n/1024**2).toFixed(1).replace('.', ',') + ' МБ' : (n/1024**3).toFixed(1).replace('.', ',') + ' ГБ';
-const BOOK_EXT = new Set(['pdf','epub','fb2','djvu','djv','mobi','azw','azw3','txt','rtf','doc','docx','odt','chm','cbz','cbr','html','htm','zip']);
+const BOOK_EXT = new Set(['pdf','epub','fb2','djvu','djv','mobi','azw','azw3','txt','rtf','doc','docx','odt','chm','cbz','cbr','html','htm','zip','ppt','pptx']);
 
-let library = [], state = null;
-const selBooks = new Set(), selDevs = new Set();
-let showOff = true;
-try { showOff = localStorage.getItem('showOff') !== '0'; } catch (e) {}
+let state = null, libKey = '', filter = 'all';
+const selBooks = new Set();
+try { filter = localStorage.getItem('filter') || 'all'; } catch (e) {}
 
 function toast(msg, isErr) {
   const t = $('toast'); t.textContent = msg; t.className = isErr ? 'err' : ''; t.style.display = 'block';
-  clearTimeout(toast.t); toast.t = setTimeout(() => t.style.display = 'none', isErr ? 6000 : 3000);
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.style.display = 'none', isErr ? 6000 : 3500);
 }
 async function api(path, body) {
-  const r = await fetch(path, body === undefined ? {} : {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
-  const data = await r.json().catch(() => ({error: 'Сервер не отвечает'}));
+  const r = await fetch('/api/admin/' + path, body === undefined ? {} : {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
+  const data = await r.json().catch(() => ({error: 'Программа не отвечает'}));
   if (!r.ok || data.error) throw new Error(data.error || 'Ошибка');
   return data;
 }
 async function act(fn) { try { return await fn(); } catch (e) { toast(e.message, true); } }
+function ago(t) {
+  if (!t) return 'никогда';
+  const s = Date.now() / 1000 - t;
+  if (s < 60) return 'только что';
+  if (s < 3600) return Math.floor(s / 60) + ' мин назад';
+  if (s < 86400) return Math.floor(s / 3600) + ' ч назад';
+  return new Date(t * 1000).toLocaleDateString('ru');
+}
 
-/* ---------- библиотека ---------- */
-async function loadLibrary() {
-  library = (await api('/api/library')).books;
+/* ---------- учебники ---------- */
+function renderLibrary() {
+  const library = state.books;
   const paths = new Set(library.map(b => b.path));
   for (const p of [...selBooks]) if (!paths.has(p)) selBooks.delete(p);
-  renderLibrary(); renderBar();
-}
-function renderLibrary() {
   const groups = new Map();
   for (const b of library) {
     const i = b.path.lastIndexOf('/'), dir = i < 0 ? '' : b.path.slice(0, i);
@@ -208,14 +186,14 @@ function renderLibrary() {
   $('folders').innerHTML = [...groups.keys()].filter(Boolean).map(d => `<option value="${esc(d)}">`).join('');
   $('libCount').textContent = library.length ? `${library.length} шт., ${fmtSize(library.reduce((s, b) => s + b.size, 0))}` : '';
   $('allBooks').checked = library.length > 0 && selBooks.size === library.length;
-  if (!library.length) { $('books').innerHTML = '<div class="empty">Пока пусто. Добавьте книги — они сохранятся здесь, и их можно будет загружать на планшеты сколько угодно раз.</div>'; return; }
+  if (!library.length) { $('books').innerHTML = '<div class="empty">Пока пусто. Добавьте учебники — планшеты скачают их сами.</div>'; return; }
   let h = '';
   for (const [dir, items] of [...groups].sort((a, b) => a[0].localeCompare(b[0], 'ru'))) {
     if (dir) h += `<div class="folder"><input type="checkbox" data-dir="${esc(dir)}" ${items.every(b => selBooks.has(b.path)) ? 'checked' : ''}> ${esc(dir)}</div>`;
     for (const b of items) {
-      const name = b.path.slice(dir ? dir.length + 1 : 0);
+      const name = b.path.slice(dir ? dir.length + 1 : 0), ext = name.includes('.') ? name.split('.').pop() : '';
       h += `<div class="book" data-path="${esc(b.path)}"><input type="checkbox" ${selBooks.has(b.path) ? 'checked' : ''}>
-        <span class="name" title="${esc(b.path)}">${esc(name)}</span><span class="ext">${esc(b.ext)}</span><span class="size">${fmtSize(b.size)}</span></div>`;
+        <span class="name" title="${esc(b.path)}">${esc(name)}</span><span class="ext">${esc(ext)}</span><span class="size">${fmtSize(b.size)}</span></div>`;
     }
   }
   $('books').innerHTML = h;
@@ -224,21 +202,21 @@ $('books').addEventListener('click', e => {
   const dirBox = e.target.closest('[data-dir]');
   if (dirBox) {
     const dir = dirBox.dataset.dir + '/';
-    for (const b of library) if (b.path.startsWith(dir) && !b.path.slice(dir.length).includes('/')) dirBox.checked ? selBooks.add(b.path) : selBooks.delete(b.path);
+    for (const b of state.books) if (b.path.startsWith(dir) && !b.path.slice(dir.length).includes('/')) dirBox.checked ? selBooks.add(b.path) : selBooks.delete(b.path);
   } else {
     const row = e.target.closest('.book'); if (!row) return;
     const p = row.dataset.path; selBooks.has(p) ? selBooks.delete(p) : selBooks.add(p);
   }
-  renderLibrary(); renderBar();
+  renderLibrary();
 });
-$('allBooks').onchange = e => { selBooks.clear(); if (e.target.checked) library.forEach(b => selBooks.add(b.path)); renderLibrary(); renderBar(); };
+$('allBooks').onchange = e => { selBooks.clear(); if (e.target.checked) state.books.forEach(b => selBooks.add(b.path)); renderLibrary(); };
 $('delBooks').onclick = () => act(async () => {
-  if (!selBooks.size) return toast('Сначала отметьте книги');
-  if (!confirm(`Удалить ${selBooks.size} книг(и) из списка программы?\nС планшетов они НЕ удалятся.`)) return;
-  await api('/api/library/delete', {paths: [...selBooks]}); selBooks.clear(); await loadLibrary();
+  if (!selBooks.size) return toast('Сначала отметьте учебники');
+  if (!confirm(`Удалить ${selBooks.size} учебник(ов)?\nОни удалятся и со всех планшетов при следующей проверке.`)) return;
+  await api('delete', {paths: [...selBooks]}); selBooks.clear(); await tick(true);
 });
 
-/* ---------- загрузка файлов в программу ---------- */
+/* ---------- добавление файлов ---------- */
 const drop = $('drop');
 drop.onclick = () => $('fileInput').click();
 $('fileInput').onchange = e => { uploadFiles([...e.target.files].map(f => ({file: f, rel: f.name}))); e.target.value = ''; };
@@ -266,203 +244,119 @@ function putFile(url, file, onProgress) {
     const x = new XMLHttpRequest(); x.open('PUT', url);
     x.upload.onprogress = e => onProgress(e.loaded);
     x.onload = () => { let d = {}; try { d = JSON.parse(x.responseText); } catch (e) {} x.status === 200 ? resolve(d) : reject(new Error(d.error || 'Ошибка загрузки')); };
-    x.onerror = () => reject(new Error('Сервер не отвечает'));
+    x.onerror = () => reject(new Error('Программа не отвечает'));
     x.send(file);
   });
 }
 async function uploadFiles(items) {
   const skipped = items.filter(i => !BOOK_EXT.has(i.file.name.split('.').pop().toLowerCase()) || i.file.name.startsWith('.'));
   items = items.filter(i => !skipped.includes(i));
-  if (!items.length) return toast(skipped.length ? 'Среди файлов нет книг поддерживаемых форматов' : 'Нет файлов', true);
+  if (!items.length) return toast(skipped.length ? 'Среди файлов нет учебников поддерживаемых форматов' : 'Нет файлов', true);
   const folder = $('folder').value.trim().replace(/^\/+|\/+$/g, '');
-  const existing = new Set(library.map(b => b.path));
   const total = items.reduce((s, i) => s + i.file.size, 0);
-  let doneBytes = 0, errors = [];
+  let doneBytes = 0; const errors = [];
   $('uploadBox').hidden = false;
   for (const [n, it] of items.entries()) {
     const rel = (folder ? folder + '/' : '') + it.rel;
     $('uploadText').textContent = `Добавляю ${n + 1} из ${items.length}: ${it.rel}`;
     try {
-      await putFile('/api/library/upload?path=' + encodeURIComponent(rel), it.file,
+      await putFile('/api/admin/upload?path=' + encodeURIComponent(rel), it.file,
         loaded => $('uploadBar').style.width = (100 * (doneBytes + loaded) / Math.max(total, 1)) + '%');
-      selBooks.add(rel);
     } catch (e) { errors.push(it.rel + ': ' + e.message); }
     doneBytes += it.file.size;
   }
   $('uploadBox').hidden = true; $('uploadBar').style.width = '0';
-  await loadLibrary();
-  const replaced = items.filter(i => existing.has((folder ? folder + '/' : '') + i.rel)).length;
-  let msg = `Добавлено книг: ${items.length - errors.length}` + (replaced ? ` (заменено: ${replaced})` : '') + (skipped.length ? `. Пропущено не-книг: ${skipped.length}` : '');
-  if (errors.length) toast(msg + '. Ошибки: ' + errors.join('; '), true); else toast(msg + '. Они уже отмечены для загрузки.');
+  await tick(true);
+  const msg = `Добавлено учебников: ${items.length - errors.length}` + (skipped.length ? `. Пропущено других файлов: ${skipped.length}` : '');
+  if (errors.length) toast(msg + '. Ошибки: ' + errors.join('; '), true); else toast(msg + '. Планшеты скачают их в течение минуты.');
 }
 
 /* ---------- планшеты ---------- */
-const STATE_TEXT = {
-  device: ['ok', 'Готов'],
-  unauthorized: ['warn', 'Нажмите «Разрешить» на экране планшета'],
-  nopermissions: ['err', 'Нет прав на USB — см. инструкцию, раздел «Частые проблемы»'],
-  offline: ['warn', 'Не отвечает — переподключите кабель'],
-  disconnected: ['', 'Не подключён'],
-};
-const devName = d => d.name || d.serial;
-function jobStatus(js, action) {
-  if (!js) return null;
-  const pct = js.total ? 100 * js.done / js.total : 0;
-  switch (js.state) {
-    case 'waiting': return {cls: '', text: 'В очереди…', pct: 0};
-    case 'working': return {cls: '', text: action === 'push' ? (js.current ? `Копирую ${js.done + 1} из ${js.total}: ${js.current.split('/').pop()}` : 'Проверяю, что уже есть…') : `Удаляю… ${js.done} из ${js.total}`, pct};
-    case 'done': return {cls: 'ok', text: action === 'push' ? 'Готово ✓' + (js.skipped ? ` (уже были: ${js.skipped})` : '') : 'Удалено ✓', pct: 100};
-    case 'error': return {cls: 'err', text: 'Ошибка: ' + js.error, pct, err: true};
-    case 'cancelled': return {cls: 'warn', text: 'Остановлено', pct, err: true};
+const devName = d => d.name || d.id;
+function devStatus(d) {
+  const total = state.books.length;
+  if (!d.online) return {cls: '', dot: '', text: 'Не на связи · был ' + ago(d.last_seen), group: 'off'};
+  if (d.state === 'no_permission') return {cls: 'err', dot: 'err', text: 'Нет доступа к файлам — откройте приложение на планшете и нажмите «Разрешить»', group: 'problem'};
+  if (d.state === 'error') return {cls: 'err', dot: 'err', text: 'Ошибка: ' + (d.error || 'неизвестно'), group: 'problem'};
+  if (d.version !== state.version) return {cls: '', dot: 'warn', text: 'Проверяет обновления…', group: 'syncing'};
+  if (d.state === 'syncing') {
+    const pct = d.total ? 100 * d.done / d.total : 0;
+    return {cls: '', dot: 'warn', text: `Скачивает ${Math.min(d.done + 1, d.total)} из ${d.total}` + (d.current ? ': ' + d.current.split('/').pop() : ''), pct, group: 'syncing'};
   }
-}
-function sortedDevices() {
-  return state.devices.slice().sort((a, b) => devName(a).localeCompare(devName(b), 'ru', {numeric: true}));
+  if (d.state === 'ok') return {cls: 'ok', dot: 'ok', text: total ? `Все учебники скачаны (${d.have})` : 'Учебников пока нет', group: 'ok'};
+  return {cls: '', dot: 'warn', text: 'Подключается…', group: 'syncing'};
 }
 function renderDevices() {
-  const job = state.job, all = sortedDevices();
-  const ready = all.filter(d => d.state === 'device');
-  for (const s of [...selDevs]) if (!ready.some(d => d.serial === s)) selDevs.delete(s);
-  const shown = all.filter(d => showOff || d.state !== 'disconnected' || (job && job.devices[d.serial]));
-  $('devCount').textContent = `готово ${ready.length} из ${all.length}` + (selDevs.size ? `, выбрано ${selDevs.size}` : '');
+  const all = state.devices.slice().sort((a, b) => devName(a).localeCompare(devName(b), 'ru', {numeric: true}));
+  const st = new Map(all.map(d => [d.id, devStatus(d)]));
+  const count = g => all.filter(d => st.get(d.id).group === g).length;
+  const online = all.filter(d => d.online).length;
+  $('tOnline').textContent = `${online} из ${all.length}`;
+  $('tSynced').textContent = `${count('ok')} из ${all.length}`;
+  $('devCount').textContent = all.length ? `всего ${all.length}` : '';
 
-  const unauth = all.filter(d => d.state === 'unauthorized').length, noperm = all.filter(d => d.state === 'nopermissions').length;
+  const FILTERS = [['all', 'Все', all.length], ['problem', 'Ошибки', count('problem')], ['syncing', 'Скачивают', count('syncing')], ['ok', 'Готовы', count('ok')], ['off', 'Не на связи', count('off')]];
+  $('filters').innerHTML = all.length ? FILTERS.map(([k, t, n]) => `<button class="chip ${filter === k ? 'on' : ''}" data-f="${k}">${t} · ${n}</button>`).join('') : '';
+
   let alerts = '';
-  if (!state.adb.ok) alerts += `<div class="alert err">${esc(state.adb.error)}. <a href="/help#install" target="_blank">Как установить</a></div>`;
-  if (unauth) alerts += `<div class="alert">${unauth} планшет(ов) ждут разрешения: на их экране нажмите «Всегда разрешать с этого компьютера» → «ОК».</div>`;
-  if (noperm) alerts += `<div class="alert err">${noperm} планшет(ов) с ошибкой «нет прав». Нужно один раз настроить компьютер — <a href="/help#problems" target="_blank">см. инструкцию</a>.</div>`;
-  if (state.adb.ok && !all.length) alerts += `<div class="alert">Планшеты не найдены. Подключите их кабелем и проверьте, что на них включена «Отладка по USB» (<a href="/help#tablet" target="_blank">инструкция</a>).</div>`;
+  if (!state.apk) alerts += '<div class="alert err">Нет файла приложения apk/uchebniki.apk — планшетам нечего устанавливать. Скачайте его со страницы релизов проекта.</div>';
+  if (!all.length) alerts += `<div class="alert">Пока ни один планшет не подключился. Откройте на планшете в браузере адрес <b>${esc(state.addresses[0] || '')}</b> и установите приложение «Учебники» (<a href="/help#tablet" target="_blank">инструкция</a>).</div>`;
   $('alerts').innerHTML = alerts;
 
+  const shown = all.filter(d => filter === 'all' || st.get(d.id).group === filter);
   $('devices').innerHTML = shown.map(d => {
-    const [cls, text] = STATE_TEXT[d.state] || ['warn', d.state];
-    const js = job && jobStatus(job.devices[d.serial], job.action);
-    const ok = d.state === 'device', sel = selDevs.has(d.serial);
+    const s = st.get(d.id);
     const lowSpace = d.free != null && d.free < 300 * 1024 * 1024;
-    const stats = ok ? `<div class="stats">${d.battery != null ? `<span>Заряд ${d.battery}%</span>` : ''}${d.free != null ? `<span class="${lowSpace ? 'low' : ''}">Свободно ${fmtSize(d.free)}</span>` : ''}</div>` : '';
-    const status = js ? `<div class="status ${js.cls}" title="${esc(js.text)}">${esc(js.text)}</div><div class="progress ${js.err ? 'err' : ''}"><div style="width:${js.pct}%"></div></div>`
-                      : `<div class="status ${cls}">${esc(text)}</div>`;
-    const acts = [['rename', 'Имя']];
-    if (ok) acts.push(['books', 'Книги на нём'], ['wake', 'Найти'], ...(d.wifi ? [] : [['wifi', 'Wi-Fi']]));
-    if (d.state === 'disconnected') acts.push(['forget', 'Забыть']);
-    return `<div class="card ${sel ? 'sel' : ''} ${ok ? '' : 'off'}" data-serial="${esc(d.serial)}">
-      <div class="top" data-act="toggle"><input type="checkbox" ${sel ? 'checked' : ''} ${ok ? '' : 'disabled'}><span class="dot ${cls}"></span><b title="${esc(devName(d))}">${esc(devName(d))}</b></div>
-      <div class="meta" title="${esc(d.serial)}">${esc(d.model || 'Модель неизвестна')} · ${d.wifi ? 'Wi-Fi' : 'USB'} · ${esc(d.serial)}</div>
-      ${stats}${status}
-      <div class="actions">${acts.map(([a, t]) => `<button class="link ${a === 'forget' ? 'danger' : ''}" data-act="${a}">${t}</button>`).join('')}</div></div>`;
-  }).join('');
+    return `<div class="card ${d.online ? '' : 'off'}" data-id="${esc(d.id)}">
+      <div class="top"><span class="dot ${s.dot}"></span><b title="${esc(devName(d))}">${esc(devName(d))}</b></div>
+      <div class="meta" title="${esc(d.model)} · Android ${esc(d.android)} · IP ${esc(d.ip)}">${esc(d.model || 'Модель неизвестна')} · Android ${esc(d.android || '?')}</div>
+      ${d.online ? `<div class="stats">${d.battery != null && d.battery >= 0 ? `<span>Заряд ${d.battery}%</span>` : ''}${d.free != null ? `<span class="${lowSpace ? 'low' : ''}">Свободно ${fmtSize(d.free)}</span>` : ''}</div>` : ''}
+      <div class="status ${s.cls}" title="${esc(s.text)}">${esc(s.text)}</div>
+      ${s.pct != null ? `<div class="progress"><div style="width:${s.pct}%"></div></div>` : ''}
+      <div class="actions"><button class="link" data-act="rename">Имя</button>${d.online ? '' : '<button class="link danger" data-act="forget">Забыть</button>'}</div></div>`;
+  }).join('') || (all.length ? '<div class="empty">Таких планшетов нет</div>' : '');
 }
+$('filters').addEventListener('click', e => {
+  const b = e.target.closest('[data-f]'); if (!b) return;
+  filter = b.dataset.f; try { localStorage.setItem('filter', filter); } catch (err) {}
+  renderDevices();
+});
 $('devices').addEventListener('click', e => {
-  const card = e.target.closest('.card'); const btn = e.target.closest('[data-act]');
+  const card = e.target.closest('.card'), btn = e.target.closest('[data-act]');
   if (!card || !btn) return;
-  const d = state.devices.find(x => x.serial === card.dataset.serial); if (!d) return;
-  const a = btn.dataset.act;
-  if (a === 'toggle') {
-    if (d.state !== 'device') return;
-    selDevs.has(d.serial) ? selDevs.delete(d.serial) : selDevs.add(d.serial);
-    renderDevices(); renderBar(); return;
-  }
+  const d = state.devices.find(x => x.id === card.dataset.id); if (!d) return;
   act(async () => {
-    if (a === 'rename') {
-      const name = prompt('Название планшета (например, номер на наклейке):', devName(d));
-      if (name && name.trim()) { await api('/api/device/rename', {serial: d.serial, name}); await tick(); }
-    } else if (a === 'wake') {
-      await api('/api/device/wake', {serial: d.serial}); toast(`Экран «${devName(d)}» включён — найдите планшет с горящим экраном`);
-    } else if (a === 'forget') {
-      if (confirm(`Убрать «${devName(d)}» из списка?`)) { await api('/api/device/forget', {serial: d.serial}); await tick(); }
-    } else if (a === 'wifi') {
-      if (!confirm(`Включить для «${devName(d)}» подключение по Wi-Fi?\nПланшет и компьютер должны быть в одной сети. После перезагрузки планшета это нужно повторить.`)) return;
-      toast('Подключаю по Wi-Fi…');
-      const r = await api('/api/wifi/enable', {serial: d.serial}); toast('Подключено по Wi-Fi: ' + r.address);
-    } else if (a === 'books') {
-      showDeviceBooks(d);
+    if (btn.dataset.act === 'rename') {
+      const name = prompt('Название планшета (например, номер на наклейке).\nОно появится и в приложении на планшете:', devName(d));
+      if (name && name.trim()) { await api('rename', {id: d.id, name}); await tick(); }
+    } else if (confirm(`Убрать «${devName(d)}» из списка?\nЕсли планшет снова выйдет на связь, он появится опять.`)) {
+      await api('forget', {id: d.id}); await tick();
     }
   });
 });
-async function showDeviceBooks(d) {
-  $('dlgTitle').textContent = 'Книги на «' + devName(d) + '»';
-  $('dlgBody').innerHTML = '<p class="muted">Загружаю список…</p>'; $('dlg').showModal();
-  const r = await api('/api/device/books', {serial: d.serial}).catch(e => ({error: e.message}));
-  if (r.error) { $('dlgBody').innerHTML = `<p class="alert err">${esc(r.error)}</p>`; return; }
-  let h = `<p class="muted">Папка: ${esc(state.settings.target_dir)}. Книг: ${r.books.length}.</p>`;
-  if (r.missing.length) h += `<div class="alert">Нет на планшете (есть в программе): ${r.missing.length}<br>${r.missing.map(esc).join('<br>')}</div>`;
-  h += r.books.length ? r.books.map(b => `<div class="book" style="cursor:default"><span class="name">${esc(b.path)}</span><span class="size">${fmtSize(b.size)}</span>${b.in_library ? '' : '<span class="ext" title="Этой книги нет в списке программы">не из программы</span>'}</div>`).join('')
-                      : '<div class="empty">В папке нет книг</div>';
-  $('dlgBody').innerHTML = h;
-}
-$('selReady').onclick = () => { state.devices.filter(d => d.state === 'device').forEach(d => selDevs.add(d.serial)); renderDevices(); renderBar(); };
-$('selNone').onclick = () => { selDevs.clear(); renderDevices(); renderBar(); };
-$('wifiBtn').onclick = () => act(async () => {
-  const addr = $('wifiAddr').value.trim(); if (!addr) return toast('Введите IP-адрес планшета', true);
-  const r = await api('/api/wifi/connect', {address: addr}); $('wifiAddr').value = ''; toast('Подключено: ' + r.address);
-});
-$('showOff').onclick = () => { showOff = !showOff; try { localStorage.setItem('showOff', showOff ? '1' : '0'); } catch (e) {} renderDevices(); };
-$('adbRestart').onclick = () => act(async () => { toast('Перезапускаю ADB…'); await api('/api/adb/restart', {}); toast('ADB перезапущен'); });
-$('saveSettings').onclick = () => act(async () => {
-  await api('/api/settings', {target_dir: $('targetDir').value, parallel: +$('parallel').value}); toast('Настройки сохранены'); settingsLoaded = false; await tick();
-});
-
-/* ---------- нижняя панель и операции ---------- */
-function renderBar() {
-  if (!state) return;
-  const job = state.job, running = job && job.running;
-  const bytes = library.filter(b => selBooks.has(b.path)).reduce((s, b) => s + b.size, 0);
-  $('pushBtn').disabled = $('deleteBtn').disabled = running || !selBooks.size || !selDevs.size;
-  $('pushBtn').textContent = selBooks.size && selDevs.size ? `Загрузить ${selBooks.size} кн. на ${selDevs.size} планш.` : 'Загрузить на планшеты';
-  $('cancelBtn').hidden = !running;
-  if (job) {
-    const st = Object.values(job.devices), c = s => st.filter(x => x.state === s).length;
-    const errs = c('error') + c('cancelled');
-    $('retryBtn').hidden = running || !errs;
-    const verb = job.action === 'push' ? 'Загрузка' : 'Удаление';
-    if (running) {
-      $('sumMain').textContent = `${verb} идёт: готово ${c('done')} из ${st.length}` + (c('error') ? `, ошибок ${c('error')}` : '');
-      $('sumSub').textContent = `${job.books.length} кн. · одновременно до ${job.parallel} планшетов · можно не ждать у компьютера`;
-      return;
-    }
-    if (!selBooks.size || !selDevs.size) {
-      $('sumMain').innerHTML = `${verb} завершена: <span class="ok-text">успешно ${c('done')}</span>` + (errs ? `, <span style="color:var(--err)">с ошибкой ${errs}</span>` : '') + ` из ${st.length}`;
-      $('sumSub').textContent = errs ? 'Проверьте планшеты с ошибкой и нажмите «Повторить для ошибок»' : 'Можно отключать планшеты';
-      return;
-    }
-  } else $('retryBtn').hidden = true;
-  $('sumMain').textContent = selBooks.size || selDevs.size ? `Выбрано: книг ${selBooks.size} (${fmtSize(bytes)}), планшетов ${selDevs.size}` : 'Выберите книги и планшеты';
-  $('sumSub').textContent = !selBooks.size ? 'Отметьте книги слева' : !selDevs.size ? 'Отметьте планшеты справа или нажмите «Выбрать все готовые»' : 'Книги, которые уже есть на планшете, копироваться повторно не будут';
-}
-$('pushBtn').onclick = () => act(async () => {
-  await api('/api/job', {action: 'push', books: [...selBooks], serials: [...selDevs]});
-  selBooks.clear(); selDevs.clear(); renderLibrary(); await tick();
-});
-$('deleteBtn').onclick = () => act(async () => {
-  if (!confirm(`Удалить ${selBooks.size} книг(и) с ${selDevs.size} планшет(ов)?\nВ списке программы книги останутся.`)) return;
-  await api('/api/job', {action: 'delete', books: [...selBooks], serials: [...selDevs]});
-  selBooks.clear(); selDevs.clear(); renderLibrary(); await tick();
-});
-$('cancelBtn').onclick = () => act(async () => { if (confirm('Остановить операцию? Уже скопированные книги останутся на планшетах.')) await api('/api/job/cancel', {}); });
-$('retryBtn').onclick = () => act(async () => { await api('/api/job/retry', {}); await tick(); });
 $('journalBtn').onclick = () => act(async () => {
-  const r = await api('/api/journal');
-  $('dlgTitle').textContent = 'Журнал операций';
-  $('dlgBody').innerHTML = r.text ? `<pre>${esc(r.text.trim().split('\n\n').reverse().join('\n\n'))}</pre>` : '<div class="empty">Пока ничего не загружали</div>';
+  const r = await api('journal');
+  $('dlgTitle').textContent = 'Журнал';
+  $('dlgBody').innerHTML = r.text ? `<pre>${esc(r.text.trim().split('\n').reverse().join('\n'))}</pre>` : '<div class="empty">Пока пусто</div>';
   $('dlg').showModal();
 });
 
-/* ---------- опрос сервера ---------- */
-let settingsLoaded = false, offline = false;
-async function tick() {
+/* ---------- опрос ---------- */
+let offline = false;
+async function tick(forceLib) {
   try {
-    state = await api('/api/state');
+    state = await api('state');
     if (offline) { offline = false; toast('Связь с программой восстановлена'); }
-    $('adbPill').textContent = state.adb.ok ? 'ADB работает' : 'ADB не работает';
-    $('adbPill').className = 'pill' + (state.adb.ok ? '' : ' bad');
-    if (!settingsLoaded) { $('targetDir').value = state.settings.target_dir; $('parallel').value = state.settings.parallel; settingsLoaded = true; }
-    renderDevices(); renderBar();
+    $('addr').textContent = state.addresses[0] || 'нет сети';
+    $('addr2').textContent = state.addresses.length > 1 ? 'Другие адреса: ' + state.addresses.slice(1).join(', ') : '';
+    $('tBooks').textContent = state.books.length;
+    if (forceLib || state.version !== libKey) { libKey = state.version; renderLibrary(); }
+    renderDevices();
   } catch (e) {
     if (!offline) { offline = true; toast('Программа на компьютере не отвечает — запустите её снова', true); }
   }
 }
-loadLibrary().catch(e => toast(e.message, true));
-tick(); setInterval(tick, 1000);
+tick(true); setInterval(tick, 2000);
 </script>
 </body>
 </html>
