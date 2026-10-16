@@ -1,0 +1,5 @@
+library/
+config.json
+config.tmp
+journal.log
+__pycache__/
